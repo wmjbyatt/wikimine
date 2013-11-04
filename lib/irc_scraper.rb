@@ -6,6 +6,8 @@ class IrcScraper
   #
 
   attr_reader :client
+  attr_reader :publishers
+
 
   #
   # CONSTANTS
@@ -26,6 +28,16 @@ class IrcScraper
   def initialize(opts = {:autostart=> false, :channels => ['#en.wikipedia']})
     reference = self
 
+    # Create a collection of publish channels. This way if there are multiple IRC channels sub'd, we can publish to
+    # specific publish channels
+    @publishers = Hash.new
+    opts[:channels].each do |channel|
+      @publishers[channel] = RedisPublisher.new channel
+    end
+
+    puts @publishers.inspect
+
+    # Build and set up IRC client
     @client = EventMachine::IRC::Client.new do
       host 'irc.wikimedia.org'
       port '6667'
@@ -41,7 +53,10 @@ class IrcScraper
       end
 
       on :message do |source, target, message|
-        reference.record_message message unless message.blank?
+        # Record a message and, if succesful, publish the object _id
+        if record = reference.record_message(message)
+          reference.publishers[target].publish record._id
+        end
       end
     end
   end
@@ -58,10 +73,12 @@ class IrcScraper
     message.gsub! /\cC\d{1,2}(?:,\d{1,2})?|[\cC\cB\cI\cU\cR\cO]/, '' # Stripping out IRC color-control sequences
 
     if parsed_message = self.parse_message(message)
-      WikipediaChangeLog.new(parsed_message).save
-      puts "Created a record"
+      record = WikipediaChangeLog.new(parsed_message)
+      record.save
+
+      return record
     else
-      puts "Did not create record"
+      return false
     end
   end
 
@@ -70,7 +87,7 @@ class IrcScraper
   def parse_message message
     match_data = message.match(/#{ARTICLE}.*#{DIFF}\s*#{AUTHOR}\s*#{CHANGE_COUNT}\s*#{SECTION}\s+#{COMMIT_MSG}/)
     #
-    # This is a bitch of a regex. We really ought to use a parser for this, but I'm not excited about bringing an entire
+    # This is a bitch of a regex. I really ought to use a parser for this, but I'm not excited about bringing an entire
     # parser or tokenizer gem into the picture for the sake of a single gnarly match. So instead I cut the regex into
     # chunks that I've defined as constants above.
     #
