@@ -6,9 +6,9 @@ listen = (server) ->
   @io.sockets.on 'connection', (socket) =>
     socket.emit 'connected'
 
-    for route, action of @router
-      socket.on route, (data) ->
-        action(socket, data)
+    socket.on 'request', (data) =>
+      console.log data
+      @router[data.controller][data.method](socket, data.body)
 
 register_router = (router) ->
   @router = router

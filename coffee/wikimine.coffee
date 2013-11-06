@@ -8,7 +8,9 @@ sockets_control.listen(app)
 
 # Build routing table
 router =
-  default: require('./controllers/default_controller').index
+  default: require('./controllers/default_controller')
+  authors: require('./controllers/authors_controller')
+  volume: require('./controllers/volume_controller')
 
 # Register routing table with sockets_control
 sockets_control.register_router router

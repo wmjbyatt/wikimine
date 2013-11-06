@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <title>Wikimine</title>
+        <!-- I should do this all better. RequireJS? -->
+
+        <!-- load 3rd party libraries -->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="http://localhost:8008/socket.io/socket.io.js"></script>
+
+        <!-- load our libraries. NOTE: Order matters -->
+        <!--<script type="text/coffescript" src="./scripts/controllers/default_controller.coffee"></script> -->
+        <script type="text/coffeescript" src="./scripts/wikimine.coffee"></script>
+
+
+        <!-- load coffeescript compiler -->
+         <script type="text/javascript" language="javascript" src="./scripts/vendor/coffee-script.js"></script>
+    </head>
+
+    <body>
+        <h1>wikimine</h1>
+        <div id="content">
+            <ul id="numerics_list">
+                <li>Changes: <span id="changes_count"></span></li>
+                <li>Authors: <span id="authors_count"></span></li>
+                <li>Volume: <span id="volume_count"></span></li>
+            </ul>
+        </div>
+    </body>
+</html>

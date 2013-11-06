@@ -7,16 +7,9 @@ class RedisSubscriber
     @client = redis.createClient()
     @client.subscribe(@channel)
 
-    @client.on 'message', (channel, message) ->
-      # We're going to refer to a property of RedisSubscriber here so that client code
-      # can easily change this functionality
-       reference.message_handler(message)
-
-
-  message_handler: (message) ->
-    console.log message
-
-
+  #Delegate on method to @client
+  on: (event, callback) =>
+    @client.on event, callback
 
 module.exports =
   'RedisSubscriber': RedisSubscriber
